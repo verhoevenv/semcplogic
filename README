@@ -1,0 +1,10 @@
+Toolbox to do a SEM-like analysis (path analysis) based on CP-Logic.
+
+This tool depends on:
+* Python (tested on 2.6.2, others might work)
+* Bernd Gutmann's CP-Logic to Problog compiler
+* Problog with YAP (see http://dtai.cs.kuleuven.be/problog/)
+* Gnuplot
+* R
+
+Edit semcplogic/config.py to point to the correct install locations for these programs.
