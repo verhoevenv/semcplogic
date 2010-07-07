@@ -16,7 +16,7 @@ class ModelFrame(Frame):
     self.codegen = CPLogicGenerator()
     
     self.buttonFrame = ToolBarFrame(self)
-    self.buttonFrame.pack(side=LEFT)
+    self.buttonFrame.pack(side=TOP)
     
     frame = Frame(self)
     frame.grid_rowconfigure(0, weight=1)
@@ -31,7 +31,7 @@ class ModelFrame(Frame):
     self.cpText.grid(row=0, column=0, sticky=N+S+E+W)
     xscrollbar.config(command=self.cpText.xview)
     yscrollbar.config(command=self.cpText.yview)
-    frame.pack(side=BOTTOM)
+    frame.pack(side=BOTTOM,expand=YES,fill=BOTH)
     
     #self.vScroll = Scrollbar(parent)
     #self.vScroll.pack(side=RIGHT, fill=Y)
@@ -55,12 +55,7 @@ class DataFrame(Frame):
     Frame.__init__(self,parent)
     self.storage = storage
     self.storage.addModelObserver(self)
-    
-    self.tableFrame = Frame(self)
-    self.tableFrame.pack(side=TOP,expand=YES,fill=BOTH)
-    
-    self.table = MultiListbox(self.tableFrame,(("temp1",20),("temp2",20)))
-    self.table.pack(side=TOP,expand=YES,fill=BOTH)
+
     self.buttonFrame = Frame(self)
     self.buttonFrame.pack(side=TOP)
 
@@ -85,6 +80,12 @@ class DataFrame(Frame):
     self.buttonDiscretise = Button(self.buttonFrame, command=self.buttonDiscretiseClick)
     self.buttonDiscretise.configure(text="Discretise")
     self.buttonDiscretise.pack(side=LEFT)
+    
+    self.tableFrame = Frame(self)
+    self.tableFrame.pack(side=TOP,expand=YES,fill=BOTH)
+    
+    self.table = MultiListbox(self.tableFrame,(("temp1",20),("temp2",20)))
+    self.table.pack(side=TOP,expand=YES,fill=BOTH)
     
   def buttonLoadClick(self):
     #TODO: implement

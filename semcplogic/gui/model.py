@@ -197,22 +197,22 @@ class ToolBarFrame(Frame):
     
     self.buttonLoad = Button(self, command=self.buttonLoadClick)
     self.buttonLoad.configure(text="Load")
-    self.buttonLoad.pack(side=TOP)
+    self.buttonLoad.pack(side=LEFT)
 
     self.buttonSave = Button(self, command=self.buttonSaveClick)
     self.buttonSave.configure(text="Save")
-    self.buttonSave.pack(side=TOP)
+    self.buttonSave.pack(side=LEFT)
     
     #TODO: separator inbetween here
     
     self.buttonSelect = SelectButton(self, command=self.buttonSelectClick)
-    self.buttonSelect.pack(side=TOP)
+    self.buttonSelect.pack(side=LEFT)
     self.buttonNode = NodeButton(self, command=self.buttonNodeClick)
-    self.buttonNode.pack(side=TOP)
+    self.buttonNode.pack(side=LEFT)
     self.buttonInfluence = InfluenceButton(self, command=self.buttonInfluenceClick)
-    self.buttonInfluence.pack(side=TOP)
+    self.buttonInfluence.pack(side=LEFT)
     self.buttonErase = EraseButton(self, command=self.buttonEraseClick)
-    self.buttonErase.pack(side=TOP)
+    self.buttonErase.pack(side=LEFT)
 
     self.setCurrent(self.buttonSelect)
     #self.modelCanvas should be set from outside
