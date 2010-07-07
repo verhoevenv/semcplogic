@@ -73,17 +73,20 @@ class Model:
     for n in ns:
       n.markChildren()
     self.analysed = True
-  def sample(self,n):
+  def sample(self,n,nodes=None):
     assert(self.analysed)
     startnodes = [node.name for node in self.nodes.values() if node.exo]
-    return self.sampleNodes(n,startnodes)
-  def sampleNodes(self,n,startnodes):
-    d = Dataset(self.nodes.keys())
+    return self.sampleNodes(n,startnodes,nodes)
+  def sampleNodes(self,n,startnodes,outputnodes=None):
+    if outputnodes == None:
+      d = Dataset(self.nodes.keys())
+    else:
+      d = Dataset(outputnodes)
     for i in xrange(n):
-      d.addDictData(self.sampleOnce(startnodes))
+      d.addDictData(self.sampleOnce(startnodes,outputnodes))
     return d
-  def sampleOnce(self,startnodes):
-    s = ContinuousSampler(self,startnodes)
+  def sampleOnce(self,startnodes,outputnodes=None):
+    s = ContinuousSampler(self,startnodes,outputnodes)
     return s.sample()
   def getLinks(self):
     links = []

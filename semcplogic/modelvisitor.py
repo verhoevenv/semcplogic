@@ -42,8 +42,9 @@ class ModelVisitor:
     return None
 
 class ContinuousSampler(ModelVisitor):
-  def __init__(self,model,startnodes=[]):
+  def __init__(self,model,startnodes=[],outputnodes=None):
     self.nodeval = {}
+    self.outputnodes = outputnodes
     ModelVisitor.__init__(self,model,startnodes)
   def initNode(self,node):
     avg = self.m.nodes[node].avg
@@ -66,11 +67,21 @@ class ContinuousSampler(ModelVisitor):
   def alreadySampled(self,node):
     return self.nodeval.has_key(node)
   def getResult(self):
+    if self.outputnodes == None:
+      self.outputnodes = set(self.nodeval.keys())
+    else:
+      self.outputnodes = set(self.outputnodes)
+    allnodes = set(self.nodeval.keys())
+    assert(allnodes.issuperset(self.outputnodes))
+    latentnodes = allnodes - self.outputnodes
+    for n in latentnodes:
+      del self.nodeval[n]
     return self.nodeval
   def sample(self):
     return self.start()
 
 class DiscreteSampler(ModelVisitor):
+  #NOTE: not finished, will not work!
   def __init__(self,model,startnodes=[]):
     self.nodeval = {}
     ModelVisitor.__init__(self,model,startnodes)
