@@ -353,8 +353,9 @@ class InfluenceButton(Button):
     if self.tarrow is not None:
       canvas.coords(self.tarrow,self.start[0],self.start[1],event.x,event.y)
   def mouseUp(self, event, model, canvas):
-    if self.tarrow is not None:
-      canvas.delete(self.tarrow)
+    if self.tarrow is None:
+      return
+    canvas.delete(self.tarrow)
     self.tarrow = None
     i = canvas.findObjects(event.x,event.y,tags=["node"])
     if i is None:
