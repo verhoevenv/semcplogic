@@ -103,10 +103,7 @@ class ModelBuilder:
     n = Node(name,avg,stddev)
     self.ns[name] = n
   def setInfluence(self,fromNode,toNode,amount):
-    try:
-      self.ns[fromNode].influences(self.ns[toNode],amount)
-    except KeyError:
-      pass
+    self.ns[fromNode].influences(self.ns[toNode],amount)
   def setName(self,oldname,newname):
     n = self.ns[oldname]
     del self.ns[oldname]
