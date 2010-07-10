@@ -14,9 +14,9 @@ b.setInfluence("a","b",5)
 b.setInfluence("a","c",5)
 m = b.consume()
 
-m.nodes["c"].setLevels(["hoog","middel","laag"])
+m.nodes["c"].setLevels(["laag","middel","hoog"])
 d = m.sample(100)
-d2 = d.discretise({"a":["laag","hoog"],"b":["hoog","laag"],"c":["hoog","middel","laag"]})
+d2 = d.discretise({"a":["laag","hoog"],"b":["laag","hoog"],"c":["laag","middel","hoog"]})
 
 cm = CPLogicGenerator()
 cpcode = cm.generate(m)
