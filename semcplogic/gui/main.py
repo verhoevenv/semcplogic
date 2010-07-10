@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 from Tkinter import *
 from model import ModelCanvas,ToolBarFrame
-from ..cpmodel import CPLogicGenerator
+from ..cpmodel import CPLogicGenerator,TableResultInterpreter
+from ..cpcompiler import CPCompiler
 from ..dataset import Dataset
 from multilistbox import MultiListbox
 from itertools import repeat
@@ -128,17 +129,49 @@ class DataFrame(Frame):
 class LearningFrame(Frame):
   def __init__(self,parent,storage):
     Frame.__init__(self,parent)
+    self.storage = storage
+    
     self.buttonFrame = Frame(self)
     self.buttonFrame.pack(side=TOP)
-
-    self.buttonLoad = Button(self.buttonFrame, command=self.buttonLoadClick)
-    self.buttonLoad.configure(text="TODO")
-    self.buttonLoad.pack(side=LEFT)
+    Label(self.buttonFrame, text="Iterations:").pack(side=LEFT)
+    self.entryIterations = Entry(self.buttonFrame,width=5)
+    self.entryIterations.insert(0,"100")
+    self.entryIterations.pack(side=LEFT)
+    self.buttonLearn = Button(self.buttonFrame, command=self.buttonLearnClick)
+    self.buttonLearn.configure(text="Learn")
+    self.buttonLearn.pack(side=LEFT)
     
-  def buttonLoadClick(self):
-    pass
-  def buttonGenerateClick(self):
-    pass
+    self.tableholder = Frame(self) #this might become a canvas to get it scrollable
+    self.tableholder.pack(side=TOP)
+    
+  def buttonLearnClick(self):
+    #TODO: might want to put some feedback in the gui...
+    cm = CPLogicGenerator()
+    cpcode = cm.generate(self.storage.currentModel)
+    cc = CPCompiler()
+    #TODO: make sure data is discretised
+    runmodel = cc.compileCode(cpcode,self.storage.currentDataset)
+    runmodel.iterations = int(self.entryIterations.get())
+    result = runmodel.run()
+    t = TableResultInterpreter()
+    r = t.interprete(self.storage.currentModel,result.latest())
+    for (nodename,restable) in r.items():
+      self.addTable(nodename,restable)
+
+  def addTable(self,name,datatable):
+    f = Frame(self.tableholder,relief=RIDGE,bd=3)
+    Label(f,text=name).grid(row=0,column=0,sticky=EW)
+    colnames = list(datatable.values()[0].keys())
+    #TODO: sort this according to the defined order which is probably stored somewhere in currentmodel
+    for i,n in enumerate(colnames):
+      Label(f,text=n).grid(row=0,column=(i+1),sticky=EW)
+    for (i,(rowname,rowdata)) in enumerate(datatable.items()):
+      Label(f,text=rowname).grid(row=i+1,column=0,sticky=EW)
+      for j,n in enumerate(colnames):
+        #TODO: maybe round the data, maybe...
+        Label(f,text=str(rowdata[n])).grid(row=(i+1),column=(j+1),sticky=EW)
+    f.pack(side=TOP)
+    
 
 class StorageController:
   def __init__(self):
