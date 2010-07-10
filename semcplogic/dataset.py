@@ -14,7 +14,8 @@ def transpose(matrix):
   return m
 
 def discretise(vector,levels=["laag","hoog"]):
-  """Partitions the data in approximately equally large sets. Probably not in a statistically valid way."""
+  """Partitions the data in approximately equally large sets. Probably not in a statistically valid way.
+  levels is a list with the lowest discretisation level first."""
   l = len(vector)
   s = sorted(vector)
   elemspersub = float(l)/len(levels)
