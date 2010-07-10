@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from semcplogic.model import ModelBuilder
-from semcplogic.cpmodel import CPLogicGenerator
+from semcplogic.cpmodel import CPLogicGenerator,TableResultInterpreter
 from semcplogic.cpcompiler import CPCompiler
 from semcplogic.problogresult import GnuplotDrawer
+import pprint
 
 b = ModelBuilder()
 b.addNode("a")
@@ -25,6 +26,8 @@ cc = CPCompiler()
 runmodel = cc.compileCode(cpcode,d2)
 runmodel.iterations = 100
 result = runmodel.run()
-import pprint; pprint.pprint(result.probs)
 g = GnuplotDrawer()
 g.draw(result)
+t = TableResultInterpreter()
+r = t.interprete(m,result.latest())
+pprint.pprint(r)

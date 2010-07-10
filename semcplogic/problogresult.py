@@ -60,6 +60,8 @@ class ProblogResult:
         acc = acc * (1 - val)
       newd[k] = newv
     return newd
+  def latest(self):
+    return self.probs[-1]
 
 class GnuplotDrawer:
   def __init__(self):

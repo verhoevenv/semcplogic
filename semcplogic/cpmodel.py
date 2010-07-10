@@ -3,6 +3,7 @@
 
 from itertools import product
 from collections import defaultdict
+import re
 
 class CPLogicGenerator:
   def generate(self,model):
@@ -23,3 +24,21 @@ class CPLogicGenerator:
   def makeHead(self,var):
     p = 1.0/len(var.levels)
     return ",".join(["%s:%s(%s)" % (p,var.name,l) for l in var.levels])
+
+class TableResultInterpreter:
+  def interprete(self,model,results):
+    res = {}
+    for (nname,n) in model.nodes.items():
+      patt = re.compile("([0-9.]*:%s\(\w*\),?)* <-- .*" % nname)
+      d = {}
+      for (code,prob) in results.items():
+        m = patt.match(code)
+        if m is not None:
+          m2 = re.match("(.*) <-- (.*).",code)
+          head = m2.group(1)
+          cond = m2.group(2)
+          targets = re.findall("%s\((.*?)\)"%nname,head)
+          pairedresults = dict(zip(targets,prob))
+          d[cond] = pairedresults
+      res[nname] = d
+    return res
