@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from Tkinter import *
+import tkMessageBox
 from model import ModelCanvas,ToolBarFrame
 from ..cpmodel import CPLogicGenerator,TableResultInterpreter
 from ..cpcompiler import CPCompiler
@@ -145,11 +146,13 @@ class LearningFrame(Frame):
     self.tableholder.pack(side=TOP)
     
   def buttonLearnClick(self):
-    #TODO: might want to put some feedback in the gui...
+    if(not self.storage.currentDataset.isDiscretised()):
+      tkMessageBox.showwarning("Warning", "Can't learn from non-discretised data!")
+      return
+    #TODO: might want to put some feedback on learning progress in the gui...
     cm = CPLogicGenerator()
     cpcode = cm.generate(self.storage.currentModel)
     cc = CPCompiler()
-    #TODO: make sure data is discretised
     runmodel = cc.compileCode(cpcode,self.storage.currentDataset)
     runmodel.iterations = int(self.entryIterations.get())
     result = runmodel.run()

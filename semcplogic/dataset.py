@@ -65,6 +65,12 @@ class Dataset:
     for e in dnew:
       d.addData(e)
     return d
+  def isDiscretised(self):
+    """Tries to find out if the dataset is discretised by comparing the number of levels to
+    the number of datapoints."""
+    maxnumlevels = max(len(set(x)) for x in transpose(self.data))
+    ndatapoints = len(self.data)
+    return maxnumlevels < ndatapoints/2
 
 def fromCSV(path):
   r = csv.DictReader(open(path))
