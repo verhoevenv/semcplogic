@@ -161,8 +161,8 @@ class LearningFrame(Frame):
   def addTable(self,name,datatable):
     f = Frame(self.tableholder,relief=RIDGE,bd=3)
     Label(f,text=name).grid(row=0,column=0,sticky=EW)
-    colnames = list(datatable.values()[0].keys())
-    #TODO: sort this according to the defined order which is probably stored somewhere in currentmodel
+    colnames = self.storage.currentModel.nodes[name].levels
+    assert(set(datatable.values()[0].keys()) == set(colnames))
     for i,n in enumerate(colnames):
       Label(f,text=n).grid(row=0,column=(i+1),sticky=EW)
     for (i,(rowname,rowdata)) in enumerate(datatable.items()):
