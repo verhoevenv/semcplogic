@@ -106,7 +106,7 @@ class DataFrame(Frame):
     self.setData(self.storage.currentDataset.makeDiff())
   def clearData(self):
     self.table.delete(0,END)
-    self.storage.newDataset(Dataset(self.table.l.keys()))
+    self.storage.newDataset(Dataset(self.storage.currentModel.nodes.keys()))
   def setData(self,dataset):
     assert(len(self.table.lists) == len(dataset.getVariables()))
     self.clearData()
