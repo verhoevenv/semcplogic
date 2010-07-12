@@ -71,10 +71,23 @@ class Dataset:
     maxnumlevels = max(len(set(x)) for x in transpose(self.data))
     ndatapoints = len(self.data)
     return maxnumlevels < ndatapoints/2
+  def toCSV(self,path):
+    f = open(path,"w")
+    try:
+      w = csv.DictWriter(f,self.variables)
+      w.writerow(dict(zip(self.variables,self.variables)))
+      for d in self.asDict():
+        w.writerow(d)
+    finally:
+      f.close()
 
 def fromCSV(path):
-  r = csv.DictReader(open(path))
-  d = Dataset(r.fieldnames)
-  for row in r:
-    d.addDictData(row)
-  return d
+  f = open(path,"r")
+  try:
+    r = csv.DictReader(f)
+    d = Dataset(r.fieldnames)
+    for row in r:
+      d.addDictData(row)
+    return d
+  finally:
+    f.close()

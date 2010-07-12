@@ -16,7 +16,10 @@ m = b.consume()
 
 #print sampleOnce([f,v1,v2,v3,v4])
 
-w = csv.DictWriter(open("raw.csv","w"),["f","v1","v2","v3"])
-w.writerow({"f":"f","v1":"v1","v2":"v2","v3":"v3"})
-for i in xrange(10000):
-  w.writerow(m.sampleOnce(["v1","v2","v3"]))
+#w = csv.DictWriter(open("raw.csv","w"),["f","v1","v2","v3"])
+#w.writerow({"f":"f","v1":"v1","v2":"v2","v3":"v3"})
+#for i in xrange(10000):
+#  w.writerow(m.sampleOnce(["v1","v2","v3"]))
+
+d = m.sample(10000)
+d.toCSV("raw.csv")
