@@ -58,7 +58,8 @@ class GuiModel:
     self.changedCallback = callback
     self.modelChanged()
 
-  def draw(self,c):
+  def draw(self):
+    c = self.canvas
     for k,(x,y) in self.nodeLocations.items():
       if "node-%s" % k in self.IDs:
         (nID,tID) = self.IDs["node-%s" % k]
@@ -155,6 +156,7 @@ class GuiModel:
     del self.IDs["node-%s" % nodename]
     self.canvas.delete(nID)
     self.canvas.delete(tID)
+    self.draw()
 
     self.modelChanged()
 
@@ -194,7 +196,7 @@ class ModelCanvas(Canvas):
     [a] = [n[len("%s:" % attr):] for n in self.gettags(item) if n.startswith("%s:" % attr)]
     return a
   def draw(self):
-    self.model.draw(self)
+    self.model.draw()
   def clear(self):
     l = self.find_all()
     for i in l:
