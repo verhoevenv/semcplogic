@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 from Tkinter import *
 import tkMessageBox
+import tkFileDialog
 from model import ModelCanvas,ToolBarFrame
 from ..cpmodel import CPLogicGenerator,TableResultInterpreter
 from ..cpcompiler import CPCompiler
-from ..dataset import Dataset
+from ..dataset import Dataset, fromCSV
 from multilistbox import MultiListbox
 from itertools import repeat
 
@@ -90,11 +91,15 @@ class DataFrame(Frame):
     self.table.pack(side=TOP,expand=YES,fill=BOTH)
     
   def buttonLoadClick(self):
-    #TODO: implement
-    pass
+    f = tkFileDialog.askopenfilename(filetypes=[("Comma-separated values file",".csv"),("All files",".*")])
+    if not f=="":
+      #TODO: this should probably do some variable name sanity checking
+      d = fromCSV(f)
+      self.setData(d)
   def buttonSaveClick(self):
-    #TODO: implement
-    pass
+    f = tkFileDialog.asksaveasfilename(filetypes=[("Comma-separated values file",".csv"),("All files",".*")])
+    if not f=="":
+      self.storage.currentDataset.toCSV(f)
   def buttonGenerateClick(self):
     #TODO: add dialog to specify number of samples, startnodes, latent factors
     d = self.storage.currentModel.sample(100)
