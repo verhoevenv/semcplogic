@@ -64,7 +64,7 @@ class DataFrame(Frame):
     self.buttonLoad = Button(self.buttonFrame, command=self.buttonLoadClick)
     self.buttonLoad.configure(text="Import dataset")
     self.buttonLoad.pack(side=LEFT)
-    self.buttonSave = Button(self.buttonFrame, command=self.buttonLoadClick)
+    self.buttonSave = Button(self.buttonFrame, command=self.buttonSaveClick)
     self.buttonSave.configure(text="Export dataset")
     self.buttonSave.pack(side=LEFT)
     self.buttonClear = Button(self.buttonFrame, command=self.clearData)
