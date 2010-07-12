@@ -3,6 +3,7 @@ from Tkinter import *
 import tkFileDialog
 import tkSimpleDialog
 import pickle
+from math import sqrt
 
 from ..model import Model,ContinuousModelBuilder
 
@@ -39,11 +40,19 @@ class GuiModel:
     for (s,e) in self.model.getLinks():
       (x0,y0) = self.nodeLocations[s.name]
       (x1,y1) = self.nodeLocations[e.name]
+      vx = x1-x0
+      vy = y1-y0
+      dist = sqrt(vx*vx+vy*vy)
+      try:
+        dx = vx/dist*self.nodesize
+        dy = vy/dist*self.nodesize
+      except ZeroDivisionError:
+        dx = dy = 0
       if "link-%s-%s" % (s.name,e.name) in self.IDs:
         lID = self.IDs["link-%s-%s" % (s.name,e.name)]
-        c.coords(lID,x0,y0,x1,y1)
+        c.coords(lID,x0+dx,y0+dy,x1-dx,y1-dy)
       else:
-        lID = c.create_line(x0,y0,x1,y1,arrow=LAST,tags=["link", "linkfrom:%s" % s.name, "linkto:%s" % e.name])
+        lID = c.create_line(x0+dx,y0+dy,x1-dx,y1-dy,arrow=LAST,tags=["link", "linkfrom:%s" % s.name, "linkto:%s" % e.name])
         self.IDs["link-%s-%s" % (s.name,e.name)] = lID
 
   def addNode(self,x,y):
