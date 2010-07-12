@@ -101,7 +101,7 @@ class DataFrame(Frame):
     if not f=="":
       self.storage.currentDataset.toCSV(f)
   def buttonGenerateClick(self):
-    #TODO: add dialog to specify number of samples, startnodes, latent factors
+    #TODO: add dialog to specify number of samples, startnodes
     d = self.storage.currentModel.sample(100)
     self.addData(d)
   def buttonDiscretiseClick(self):
@@ -111,7 +111,7 @@ class DataFrame(Frame):
     self.setData(self.storage.currentDataset.makeDiff())
   def clearData(self):
     self.table.delete(0,END)
-    self.storage.newDataset(Dataset(self.storage.currentModel.nodes.keys()))
+    self.storage.newDataset(Dataset(self.storage.currentModel.getObservableVariables()))
   def setData(self,dataset):
     assert(len(self.table.lists) == len(dataset.getVariables()))
     self.clearData()
@@ -124,7 +124,7 @@ class DataFrame(Frame):
     self.storage.newDataset(self.storage.currentDataset)
   def newModel(self,m):
     self.clearData()
-    cols = m.nodes.keys()
+    cols = self.storage.currentDataset.getVariables()
     if cols == []:
       return
     collayout = zip(cols,repeat(5))

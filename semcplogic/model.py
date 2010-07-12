@@ -74,20 +74,17 @@ class Model:
     for n in ns:
       n.markChildren()
     self.analysed = True
-  def sample(self,n,nodes=None):
+  def sample(self,n):
     assert(self.analysed)
     startnodes = [node.name for node in self.nodes.values() if node.exo]
-    return self.sampleNodes(n,startnodes,nodes)
-  def sampleNodes(self,n,startnodes,outputnodes=None):
-    if outputnodes == None:
-      d = Dataset(self.nodes.keys())
-    else:
-      d = Dataset(outputnodes)
+    return self.sampleNodes(n,startnodes)
+  def sampleNodes(self,n,startnodes):
+    d = Dataset(self.getObservableVariables())
     for i in xrange(n):
-      d.addDictData(self.sampleOnce(startnodes,outputnodes))
+      d.addDictData(self.sampleOnce(startnodes))
     return d
-  def sampleOnce(self,startnodes,outputnodes=None):
-    s = ContinuousSampler(self,startnodes,outputnodes)
+  def sampleOnce(self,startnodes):
+    s = ContinuousSampler(self,startnodes)
     return s.sample()
   def getLinks(self):
     links = []
@@ -98,6 +95,8 @@ class Model:
     return [n for n in self.nodes.values() if n.exo]
   def getLevels(self):
     return dict([(n.name,n.levels) for n in self.nodes.values()])
+  def getObservableVariables(self):
+    return [name for (name,n) in self.nodes.items() if not n.latent]
 
 class ModelBuilder:
   def __init__(self):
@@ -121,7 +120,7 @@ class ModelBuilder:
     self.ns[node].stddev = stddev
   def setLevels(self,node,levels):
     self.ns[node].setLevels(levels)
-  def setLatent(self,node,latent):
+  def setLatent(self,node,latent=True):
     self.ns[node].latent = latent
   def removeNode(self,name):
     for n in self.ns.keys():
