@@ -3,9 +3,40 @@ from Tkinter import *
 import tkFileDialog
 import tkSimpleDialog
 import pickle
-from math import sqrt
+from math import sqrt, tan, acos
 
 from ..model import Model,ContinuousModelBuilder
+
+def sign(x):
+  if x < 0.0:
+    return -1.0
+  elif x > 0.0:
+    return 1.0
+  else:
+    return 0.0
+
+def calcNodeExtent(vx,vy,iscircle,nodesize):
+  dist = sqrt(vx*vx+vy*vy)
+  try:
+    if iscircle:
+        dx = vx/dist*nodesize
+        dy = vy/dist*nodesize
+    else: #square, this can probably be simplified
+      if(abs(vx) > abs(vy)):
+        dx = sign(vx) * nodesize
+        angle = acos(vx/dist)
+        dy = -sign(vy) * tan(angle) * nodesize
+        if vx > -vy:
+          dy = -dy
+      else:
+        dy = sign(vy) * nodesize
+        angle = acos(vy/dist)
+        dx = -sign(vx) * tan(angle) * nodesize
+        if vx > -vy:
+          dx = -dx
+  except ZeroDivisionError:
+    dx = dy = 0
+  return (dx,dy)
 
 class GuiModel:
   def __init__(self,canvas):
@@ -34,7 +65,10 @@ class GuiModel:
         c.coords(nID,x-self.nodesize,y-self.nodesize,x+self.nodesize,y+self.nodesize)
         c.coords(tID,x,y)
       else:
-        nID = c.create_oval(x-self.nodesize,y-self.nodesize,x+self.nodesize,y+self.nodesize,tags=["node", "nodename:%s" % k],fill="white")
+        if self.model.nodes[k].latent:
+          nID = c.create_oval(x-self.nodesize,y-self.nodesize,x+self.nodesize,y+self.nodesize,tags=["node", "nodename:%s" % k],fill="white")
+        else:
+          nID = c.create_rectangle(x-self.nodesize,y-self.nodesize,x+self.nodesize,y+self.nodesize,tags=["node", "nodename:%s" % k],fill="white")
         tID = c.create_text(x,y,text=k)
         self.IDs["node-%s" % k] = (nID,tID)
     for (s,e) in self.model.getLinks():
@@ -42,17 +76,13 @@ class GuiModel:
       (x1,y1) = self.nodeLocations[e.name]
       vx = x1-x0
       vy = y1-y0
-      dist = sqrt(vx*vx+vy*vy)
-      try:
-        dx = vx/dist*self.nodesize
-        dy = vy/dist*self.nodesize
-      except ZeroDivisionError:
-        dx = dy = 0
+      (sdx,sdy) = calcNodeExtent(vx,vy,s.latent,self.nodesize)
+      (edx,edy) = calcNodeExtent(vx,vy,e.latent,self.nodesize)
       if "link-%s-%s" % (s.name,e.name) in self.IDs:
         lID = self.IDs["link-%s-%s" % (s.name,e.name)]
-        c.coords(lID,x0+dx,y0+dy,x1-dx,y1-dy)
+        c.coords(lID,x0+sdx,y0+sdy,x1-edx,y1-edy)
       else:
-        lID = c.create_line(x0+dx,y0+dy,x1-dx,y1-dy,arrow=LAST,tags=["link", "linkfrom:%s" % s.name, "linkto:%s" % e.name])
+        lID = c.create_line(x0+sdx,y0+sdy,x1-edx,y1-edy,arrow=LAST,tags=["link", "linkfrom:%s" % s.name, "linkto:%s" % e.name])
         self.IDs["link-%s-%s" % (s.name,e.name)] = lID
 
   def addNode(self,x,y):
@@ -120,6 +150,12 @@ class GuiModel:
     self.modelChanged()
   def setLatent(self,nodename,newlatent):
     self.builder.setLatent(nodename,newlatent)
+    #make sure the item is redrawn in different configuration
+    (nID,tID) = self.IDs["node-%s" % nodename]
+    del self.IDs["node-%s" % nodename]
+    self.canvas.delete(nID)
+    self.canvas.delete(tID)
+
     self.modelChanged()
 
   def __getstate__(self):
