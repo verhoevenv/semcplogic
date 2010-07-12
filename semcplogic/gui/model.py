@@ -303,7 +303,7 @@ class EditNodeDialog(tkSimpleDialog.Dialog):
     Label(master, text="Name").grid(row=0)
     Label(master, text="Mean").grid(row=1)
     Label(master, text="Standard deviation").grid(row=2)
-    Label(master, text="Discretization levels (space separated)").grid(row=3)
+    Label(master, text="Discretisation levels (space separated)").grid(row=3)
     self.nameE = Entry(master)
     self.nameE.insert(0,self.oldname)
     self.meanE = Entry(master)
