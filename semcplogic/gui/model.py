@@ -118,6 +118,9 @@ class GuiModel:
   def setInfluence(self,s,e,influence=1.0):
     self.builder.setInfluence(s,e,influence)
     self.modelChanged()
+  def setLatent(self,nodename,newlatent):
+    self.builder.setLatent(nodename,newlatent)
+    self.modelChanged()
 
   def __getstate__(self):
     odict = self.__dict__.copy()
@@ -280,30 +283,35 @@ class SelectButton(Button):
       oldmean = model.model.nodes[oldname].avg
       oldstddev = model.model.nodes[oldname].stddev
       oldlevels = model.model.nodes[oldname].levels
-      d = EditNodeDialog(self.winfo_toplevel(),oldname,oldmean,oldstddev,oldlevels)
+      oldlatent = model.model.nodes[oldname].latent
+      d = EditNodeDialog(self.winfo_toplevel(),oldname,oldmean,oldstddev,oldlevels,oldlatent)
       if d.mean != oldmean:
         model.setAvg(oldname,d.mean)
       if d.stddev != oldstddev:
         model.setStddev(oldname,d.stddev)
       if d.levels != oldlevels:
         model.setLevels(oldname,d.levels)
+      if d.latent != oldlatent:
+        model.setLatent(oldname,d.latent)
       if d.name != oldname:
         model.setName(oldname,d.name)
     else:
       raise AssertionError
 
 class EditNodeDialog(tkSimpleDialog.Dialog):
-  def __init__(self,master,oldname,oldmean,oldstddev,oldlevels):
+  def __init__(self,master,oldname,oldmean,oldstddev,oldlevels,oldlatent):
     self.oldname = oldname
     self.oldmean = oldmean
     self.oldstddev = oldstddev
     self.oldlevels = " ".join(oldlevels)
+    self.latentvar = IntVar(value=int(oldlatent))
     tkSimpleDialog.Dialog.__init__(self,master,"Edit Node Properties")
   def body(self, master):
     Label(master, text="Name").grid(row=0)
     Label(master, text="Mean").grid(row=1)
     Label(master, text="Standard deviation").grid(row=2)
     Label(master, text="Discretisation levels (space separated)").grid(row=3)
+    Label(master, text="Latent").grid(row=4)
     self.nameE = Entry(master)
     self.nameE.insert(0,self.oldname)
     self.meanE = Entry(master)
@@ -312,16 +320,19 @@ class EditNodeDialog(tkSimpleDialog.Dialog):
     self.stddevE.insert(0,self.oldstddev)
     self.levelsE = Entry(master)
     self.levelsE.insert(0,self.oldlevels)
+    self.latentC = Checkbutton(master,variable=self.latentvar)
     self.nameE.grid(row=0, column=1)
     self.meanE.grid(row=1, column=1)
     self.stddevE.grid(row=2, column=1)
     self.levelsE.grid(row=3, column=1)
+    self.latentC.grid(row=4, column=1)
     return self.nameE # initial focus
   def apply(self):
     self.name = self.nameE.get()
     self.mean = float(self.meanE.get())
     self.stddev = float(self.stddevE.get())
     self.levels = self.levelsE.get().split(" ")
+    self.latent = bool(self.latentvar.get())
 
 class EditInfluenceDialog(tkSimpleDialog.Dialog):
   def __init__(self,master,oldinf):

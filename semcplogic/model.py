@@ -13,6 +13,7 @@ class Node:
     self.avg = float(avg)
     self.stddev = float(stddev)
     self.exo = True
+    self.latent = False
     self.levels = ["laag","hoog"]
   def __str__(self):
     return "%s (%s,%s)" % (self.name,self.avg,self.stddev)
@@ -120,6 +121,8 @@ class ModelBuilder:
     self.ns[node].stddev = stddev
   def setLevels(self,node,levels):
     self.ns[node].setLevels(levels)
+  def setLatent(self,node,latent):
+    self.ns[node].latent = latent
   def removeNode(self,name):
     for n in self.ns.keys():
       self.setInfluence(n,name,0)
