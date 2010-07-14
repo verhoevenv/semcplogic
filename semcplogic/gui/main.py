@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from Tkinter import *
 import tkMessageBox
+import tkSimpleDialog
 import tkFileDialog
 from model import ModelCanvas,ToolBarFrame
 from ..cpmodel import CPLogicGenerator,TableResultInterpreter
@@ -101,9 +102,10 @@ class DataFrame(Frame):
     if not f=="":
       self.storage.currentDataset.toCSV(f)
   def buttonGenerateClick(self):
-    #TODO: add dialog to specify number of samples, startnodes
-    d = self.storage.currentModel.sample(100)
-    self.addData(d)
+    self.clearData()
+    d = GenerateDialog(self)
+    data = self.storage.currentModel.sample(d.samples)
+    self.addData(data)
   def buttonDiscretiseClick(self):
     levels = self.storage.currentModel.getLevels()
     self.setData(self.storage.currentDataset.discretise(levels))
@@ -131,6 +133,19 @@ class DataFrame(Frame):
     self.table.pack_forget()
     self.table = MultiListbox(self.tableFrame,collayout)
     self.table.pack(side=TOP,expand=YES,fill=BOTH)
+
+class GenerateDialog(tkSimpleDialog.Dialog):
+  def __init__(self,master):
+    tkSimpleDialog.Dialog.__init__(self,master,"Set options for data generations")
+  def body(self, master):
+    Label(master, text="Samples:").grid(row=0)
+    self.sE = Entry(master)
+    self.sE.insert(0,100)
+    self.sE.grid(row=0, column=1)
+    #TODO: specify exogenous nodes
+    return self.sE # initial focus
+  def apply(self):
+    self.samples = int(self.sE.get())
 
 class LearningFrame(Frame):
   def __init__(self,parent,storage):
