@@ -103,8 +103,12 @@ class DataFrame(Frame):
       self.storage.currentDataset.toCSV(f)
   def buttonGenerateClick(self):
     self.clearData()
-    d = GenerateDialog(self)
-    data = self.storage.currentModel.sample(d.samples)
+    d = GenerateDialog(self,dict([(n.name,n.exo) for n in self.storage.currentModel.nodes.values()]))
+    if d.samples is None:
+      return
+    startnodes = [n for (n,e) in d.exo.items() if e]
+    #TODO: catch sampling exceptions and display them
+    data = self.storage.currentModel.sampleNodes(d.samples,startnodes)
     self.addData(data)
   def buttonDiscretiseClick(self):
     levels = self.storage.currentModel.getLevels()
@@ -135,17 +139,22 @@ class DataFrame(Frame):
     self.table.pack(side=TOP,expand=YES,fill=BOTH)
 
 class GenerateDialog(tkSimpleDialog.Dialog):
-  def __init__(self,master):
+  def __init__(self,master,exonodes):
+    self.exonodes = dict([(n,IntVar(value=int(e))) for n,e in exonodes.items()])
+    self.samples = None
     tkSimpleDialog.Dialog.__init__(self,master,"Set options for data generations")
   def body(self, master):
     Label(master, text="Samples:").grid(row=0)
     self.sE = Entry(master)
     self.sE.insert(0,100)
     self.sE.grid(row=0, column=1)
-    #TODO: specify exogenous nodes
+    for i,(n,e) in enumerate(self.exonodes.items()):
+      Checkbutton(master,variable=e,text=n).grid(row=i+1,column=1)
+    Label(master, text="Exogenous nodes").grid(row=1,column=0,rowspan=i,sticky=N+S)
     return self.sE # initial focus
   def apply(self):
     self.samples = int(self.sE.get())
+    self.exo = dict([(n,e.get()) for n,e in self.exonodes.items()])
 
 class LearningFrame(Frame):
   def __init__(self,parent,storage):
