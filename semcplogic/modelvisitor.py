@@ -7,31 +7,33 @@ class SampleException(Exception):
   pass
 
 class ModelVisitor:
-  def __init__(self,model,startnodes=[]):
+  def __init__(self,model,startnodes):
+    if startnodes == []:
+      raise SampleException("Can't sample without a set of starting nodes.")
     self.m = model
-    #TODO:check wheter model can be sampled with startnodes
-    for n in startnodes:
+    self.startnodes = startnodes
+    self.todo = self.tsort()
+    for n in self.startnodes:
       self.initNode(n)
-    self.visited = set(startnodes)
-    self.todo = model.nodes.keys()
+      self.todo.remove(n)
+  def tsort(self):
+    e = [(a.name,b.name) for (a,b) in self.m.getLinks() if not b.name in self.startnodes]
+    l = []
+    s = list(self.startnodes)
+    while s != []:
+      n = s.pop()
+      l.append(n)
+      for m in [y for (x,y) in e if x == n]:
+        e.remove((n,m))
+        if not any(map(lambda x: x[1] == m,e)):
+          s.append(m)
+    if e != []:
+      raise SampleException("Model has an unbroken cycle!")
+    return l
   def start(self):
-    while(self.todo != []):
-      n = self.todo.pop(0)
-      self.enter(n)
+    for n in self.todo:
+      self.visit(n)
     return self.getResult()
-  def enter(self,node):
-    if self.alreadyVisited(node):
-      return
-    ancs = [n.name for n in self.m.nodes[node].ancs.keys()]
-    if not all(map(self.alreadyVisited,ancs)):
-      #should not run in infinite loop if the check at construction passed
-      self.todo.append(node)
-      return
-    self.visit(node)
-    self.visited.add(node)
-    self.todo.extend([n.name for n in self.m.nodes[node].links.keys()])
-  def alreadyVisited(self,node):
-    return node in self.visited
     
   #override following in subclasses
   def visit(self,node):
@@ -42,7 +44,7 @@ class ModelVisitor:
     return None
 
 class ContinuousSampler(ModelVisitor):
-  def __init__(self,model,startnodes=[]):
+  def __init__(self,model,startnodes):
     self.nodeval = {}
     ModelVisitor.__init__(self,model,startnodes)
   def initNode(self,node):
@@ -78,7 +80,7 @@ class ContinuousSampler(ModelVisitor):
 
 class DiscreteSampler(ModelVisitor):
   #NOTE: not finished, will not work!
-  def __init__(self,model,startnodes=[]):
+  def __init__(self,model,startnodes):
     self.nodeval = {}
     ModelVisitor.__init__(self,model,startnodes)
   def initNode(self,node):
@@ -111,13 +113,13 @@ import unittest
 import model
 
 class ContinuousSamplerTests(unittest.TestCase):
-  def testSampleNoHint(self):
+  def testSample(self):
     b = model.ModelBuilder()
     b.addNode("a")
     b.addNode("b",0,0)
     b.setInfluence("a","b",1)
     m = b.consume()
-    c = ContinuousSampler(m)
+    c = ContinuousSampler(m,"a")
     d = c.sample()
     self.assertTrue(d.has_key("a"))
     self.assertTrue(d.has_key("b"))
