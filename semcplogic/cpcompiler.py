@@ -12,13 +12,13 @@ import config
 from problogresult import ProblogResult
 
 class ProblogExample:
-  def __init__(self,exampletype,idx,proof,weight):
+  def __init__(self,idx,proof,exampletype="example",weight=1.0):
     self.exampletype = exampletype
     self.idx = idx
     self.proof = proof
     self.weight = weight
   def __str__(self):
-    return "%s(%s,%s,%s)." % (self.exampletype,self.idx,self.proof,self.weight)
+    return "%s(%s,(%s),%s)." % (self.exampletype,self.idx,self.proof,self.weight)
 
 class RunnableProblogModel:
   def __init__(self,code,linkmodel):
@@ -77,7 +77,7 @@ class CPProblogLink:
       #remove definitions and rules
       problog = problog[levels*2:]
       for cline in clines:
-        m = re.match("(t\(\_\)::)?(\w*\(\w*\)).",cline)
+        m = re.match("(t\(\_\)::)?([\w\(\)]*).",cline)
         if m:
           var = m.group(2)
           d[line].append(var)
@@ -90,12 +90,15 @@ class CPCompiler:
     self.validationpercent = 0
     self.weight = True
 
-  def compileCode(self,cpcode,data):
+  def compileCode(self,cpcode,data=None,otherexamples=None):
     lines = self.cpToProblog(cpcode)
     lines = self.cleanProblog(lines)
     if self.learning:
-      lines = [re.sub("\d\.\d{6}::","t(_)::",x) for x in lines]  
+      lines = [re.sub("\d\.\d{6}::","t(_)::",x) for x in lines]
+    if data is not None:
       lines.extend(self.makeExamples(data))
+    if otherexamples is not None:
+      lines.extend(self.makeExampleCode(otherexamples))    
     link = CPProblogLink(cpcode,lines)
     return RunnableProblogModel(lines,link.vardict)
 
@@ -134,7 +137,10 @@ class CPCompiler:
       proof = "true"
       for (k,v) in zip(dataset.getVariables(),row):
         proof += ",%s(%s)" % (k,v)
-      examples.append(ProblogExample("example",i,"(%s)"%proof,1.0))
+      examples.append(ProblogExample(i,proof,"example",1.0))
+    return self.makeExampleCode(examples)
+  
+  def makeExampleCode(self,examples):
     (examples,validation) = self.selectValidation(examples)
     if self.weight:
       examples = self.gatherWeights(examples)
@@ -143,6 +149,7 @@ class CPCompiler:
     excode.extend([str(x) for x in examples])
     excode.extend([str(x) for x in validation])
     return excode
+    
 
   def gatherWeights(self,data):
     numoccurs = defaultdict(int)
