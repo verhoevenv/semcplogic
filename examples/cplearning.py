@@ -49,8 +49,8 @@ data.append(ProblogExample(3,"throws(john),throws(mary),breaks",weight=0.46))
 cc.weight=False
 
 runmodel = cc.compileCode(cpcode,otherexamples=data)
-runmodel.iterations = 10
+runmodel.iterations = 100
 result = runmodel.run()
 g = GnuplotDrawer()
 g.draw(result)
-import pdb;pdb.set_trace()
+pprint.pprint(result.probs[-1])
