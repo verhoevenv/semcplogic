@@ -1,8 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os.path
+import sys
+
 yapcommand = "~/problog/yap"
 problogpath = "~/problog/"
 rcommand = "R"
 gnuplotcommand = "gnuplot"
-cplcompilerpath = "~/cpl_compiler"
+cplcompilerpath = os.path.join(sys.path[0],"cpl_compiler")
