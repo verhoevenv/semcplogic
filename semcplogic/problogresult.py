@@ -24,30 +24,46 @@ def paramAgg(l,d):
   m = re.match("(\S+) :: (\S+).",l)
   d[m.group(2)] = float(m.group(1))
 
+def errorAgg(l,d):
+  m = re.match("ex\((\d+),(train|test),(\d+),([a-zA-Z\(\)0-9_,]+),([\d.]+),([\d.]+)\).",l)
+  if not m is None:
+    abse = abs(float(m.group(5)) - float(m.group(6)))
+    d[m.group(3)].append(abse)
+
 class ProblogResult:
   def __init__(self,outputdir,links):
     assert(os.path.isdir(outputdir))
     self.outputdir = outputdir
     self.links = links
     self.gatherResults()
+    self.gatherErrors()
   def gatherResults(self):
     files = self.listFiles("factprobs")
-    self.probs  = self.globLines(files,paramAgg)
+    l = []
+    for p in files:
+      f = open(os.path.join(self.outputdir,p))
+      d = defaultdict(itertools.repeat(1).next)
+      for line in f.readlines():
+        paramAgg(line,d)
+      f.close()
+      cpd = self.recalcCPValues(d)
+      l.append(cpd)
+    self.probs = l
+  def gatherErrors(self):
+    files = self.listFiles("predictions")
+    l = []
+    for p in files:
+      f = open(os.path.join(self.outputdir,p))
+      d = defaultdict(list)
+      for line in f.readlines():
+        errorAgg(line,d)
+      f.close()
+      l.append(d)
+    self.errors = l
   def listFiles(self,filename):
     files = os.listdir(self.outputdir)
     l = [f for f in files if re.match("%s_\d+.pl"%filename, f)]
     l.sort(createcmp(filename))
-    return l
-  def globLines(self,probs,aggregatefunc):
-    l = []
-    for p in probs:
-      f = open(os.path.join(self.outputdir,p))
-      d = defaultdict(itertools.repeat(1).next)
-      for line in f.readlines():
-        aggregatefunc(line,d)
-      f.close()
-      cpd = self.recalcCPValues(d)
-      l.append(cpd)
     return l
   def recalcCPValues(self,problogvals):
     newd = {}
@@ -71,6 +87,11 @@ class GnuplotDrawer:
     self.writeValues(result.probs,datafile.file)
     self.callGnuplot(result.probs,datafile.name,"out.png")
     datafile.close()
+    
+    datafile = tempfile.NamedTemporaryFile()
+    self.writeValues(result.errors,datafile.file)
+    self.callGnuplot(result.errors,datafile.name,"error.png")
+    datafile.close()    
   def writeValues(self,l,dest):
     for d in l:
       l = [str(f) for k,v in sorted(d.items()) for f in v]
