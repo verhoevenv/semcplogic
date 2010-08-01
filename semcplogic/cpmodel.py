@@ -22,9 +22,9 @@ class NonLinearCPLogicGenerator:
       code.append("%s <-- true." % self.makeHead(n))
     return code
   def makeHead(self,var):
-    freehead = ",".join(["t(_):%s(%s)" % (var.name,l) for l in var.levels])
-    lastidx = freehead.rfind("t(_)")
-    return freehead[:lastidx] + "t(1)" + freehead[lastidx+4:]
+    headterms = ["t(_):%s(%s)" % (var.name,l) for l in var.levels]
+    headterms[-1] = headterms[-1].replace("t(_)","t(1)")
+    return ",".join(headterms)
 
 class TableResultInterpreter:
   def interprete(self,model,results):
