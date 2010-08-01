@@ -48,6 +48,8 @@ class RunnableProblogModel:
 #in case the compiler changes, this might cause trouble!
 class CPProblogLink:
   def __init__(self,cpcode,problogcode):
+    self.vardict = defaultdict(list)
+    self.constrainedvars = []
     self.matchvars(cpcode,problogcode)
 
   def matchvars(self,cpcode,problogcode):
@@ -55,7 +57,7 @@ class CPProblogLink:
     problogcode = self.cleanSource(problogcode)
     #skip import line
     problogcode = problogcode[1:]
-    self.vardict = self.getVars(cpcode,problogcode)
+    self.fillVardict(cpcode,problogcode)
 
   def cleanSource(self,code):
     code = [x for x in code if not x == ""]
@@ -65,8 +67,7 @@ class CPProblogLink:
   def countLevels(self,sourceline):
     return sourceline.count(":")
 
-  def getVars(self,cp,problog):
-    d = defaultdict(list)
+  def fillVardict(self,cp,problog):
     for line in cp:
       levels = self.countLevels(line)
       #1 line definition with probability + 1 line prolog rule
@@ -76,17 +77,26 @@ class CPProblogLink:
       clines = problog[:levels]
       #remove definitions and rules
       problog = problog[levels*2:]
-      if "t(_)" in line:
+      if "t(_)" in line or "t(1)" in line:
         for cline in clines:
           m = re.match("(\d\.\d{6}::)?([\w\(\)]*).",cline)
           if m:
             var = m.group(2)
-            d[line].append(var)
+            self.vardict[line].append(var)
+      if "t(1)" in line:
+        idx = line.find("t(1)")
+        varnum = line.count(":",0,idx)
+        cline = clines[varnum]
+        m = re.match("(\d\.\d{6}::)?([\w\(\)]*).",cline)
+        if m:
+          var = m.group(2)
+          self.constrainedvars.append(var)
     assert(len(problog) == 0 or "example" in problog[0])
-    return d
     
   def hasVar(self,problogvar):
     return any((problogvar in x) for x in self.vardict.values())
+  def isConstrained(self,problogvar):
+    return problogvar in self.constrainedvars
 
 class CPCompiler:
   def __init__(self):
@@ -109,13 +119,17 @@ class CPCompiler:
       if m:
         var = m.group(2)
         if link.hasVar(var):
-          newlines.append(re.sub("\d\.\d{6}::","t(_)::",line))
+          if link.isConstrained(var):
+            newlines.append(re.sub("\d\.\d{6}::","",line))
+          else:
+            newlines.append(re.sub("\d\.\d{6}::","t(_)::",line))
         else:
           newlines.append(line)
     return RunnableProblogModel(newlines,link.vardict)
 
   def replaceLearningParameters(self,code):
-    return [re.sub("t\(\_\)","0.1",line) for line in code]
+    #this kind of assumes there are no more than 99 cases in the head
+    return [re.sub("t\([1\_]\)","0.01",line) for line in code]
 
   def cpToProblog(self,cpcode):
     try:
