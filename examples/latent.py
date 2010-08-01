@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from semcplogic.model import ModelBuilder
-from semcplogic.cpmodel import CPLogicGenerator
+from semcplogic.cpmodel import NonLinearCPLogicGenerator
 from semcplogic.cpcompiler import CPCompiler
 from semcplogic.problogresult import GnuplotDrawer
 
@@ -18,7 +18,7 @@ m = b.consume()
 d = m.sample(100)
 d2 = d.discretise({"v1":["hoog","laag"],"v2":["hoog","laag"]})
 
-cm = CPLogicGenerator()
+cm = NonLinearCPLogicGenerator()
 cpcode = cm.generate(m)
 
 cc = CPCompiler()

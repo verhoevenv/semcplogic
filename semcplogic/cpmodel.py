@@ -5,7 +5,7 @@ from itertools import product
 from collections import defaultdict
 import re
 
-class CPLogicGenerator:
+class NonLinearCPLogicGenerator:
   def generate(self,model):
     code = []
     links = model.getLinks()

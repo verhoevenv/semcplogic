@@ -5,7 +5,7 @@ import tkMessageBox
 import tkSimpleDialog
 import tkFileDialog
 from model import ModelCanvas,ToolBarFrame
-from ..cpmodel import CPLogicGenerator,TableResultInterpreter
+from ..cpmodel import NonLinearCPLogicGenerator,TableResultInterpreter
 from ..cpcompiler import CPCompiler
 from ..dataset import Dataset, fromCSV
 from multilistbox import MultiListbox
@@ -17,7 +17,7 @@ class ModelFrame(Frame):
     storage.addModelObserver(self)
     self.parent = parent
     self.storage = storage
-    self.codegen = CPLogicGenerator()
+    self.codegen = NonLinearCPLogicGenerator()
     
     self.buttonFrame = ToolBarFrame(self)
     self.buttonFrame.pack(side=TOP)
@@ -179,7 +179,7 @@ class LearningFrame(Frame):
       tkMessageBox.showwarning("Warning", "Can't learn from non-discretised data!")
       return
     #TODO: might want to put some feedback on learning progress in the gui...
-    cm = CPLogicGenerator()
+    cm = NonLinearCPLogicGenerator()
     cpcode = cm.generate(self.storage.currentModel)
     cc = CPCompiler()
     runmodel = cc.compileCode(cpcode,self.storage.currentDataset)
