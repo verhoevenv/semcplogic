@@ -76,13 +76,17 @@ class CPProblogLink:
       clines = problog[:levels]
       #remove definitions and rules
       problog = problog[levels*2:]
-      for cline in clines:
-        m = re.match("(t\(\_\)::)?([\w\(\)]*).",cline)
-        if m:
-          var = m.group(2)
-          d[line].append(var)
+      if "t(_)" in line:
+        for cline in clines:
+          m = re.match("(\d\.\d{6}::)?([\w\(\)]*).",cline)
+          if m:
+            var = m.group(2)
+            d[line].append(var)
     assert(len(problog) == 0 or "example" in problog[0])
     return d
+    
+  def hasVar(self,problogvar):
+    return any((problogvar in x) for x in self.vardict.values())
 
 class CPCompiler:
   def __init__(self):
@@ -91,16 +95,27 @@ class CPCompiler:
     self.weight = True
 
   def compileCode(self,cpcode,data=None,otherexamples=None):
-    lines = self.cpToProblog(cpcode)
+    alteredcpcode = self.replaceLearningParameters(cpcode)
+    lines = self.cpToProblog(alteredcpcode)
     lines = self.cleanProblog(lines)
-    if self.learning:
-      lines = [re.sub("\d\.\d{6}::","t(_)::",x) for x in lines]
     if data is not None:
       lines.extend(self.makeExamples(data))
     if otherexamples is not None:
-      lines.extend(self.makeExampleCode(otherexamples))    
+      lines.extend(self.makeExampleCode(otherexamples))
     link = CPProblogLink(cpcode,lines)
-    return RunnableProblogModel(lines,link.vardict)
+    newlines = []
+    for line in lines:
+      m = re.match("(\d\.\d{6}::)?([\w\(\)]*).",line)
+      if m:
+        var = m.group(2)
+        if link.hasVar(var):
+          newlines.append(re.sub("\d\.\d{6}::","t(_)::",line))
+        else:
+          newlines.append(line)
+    return RunnableProblogModel(newlines,link.vardict)
+
+  def replaceLearningParameters(self,code):
+    return [re.sub("t\(\_\)","0.1",line) for line in code]
 
   def cpToProblog(self,cpcode):
     try:

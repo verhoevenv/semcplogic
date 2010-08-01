@@ -8,11 +8,10 @@ from semcplogic.problogresult import GnuplotDrawer
 import pprint
 
 #We use "breaks" because break is a reserved keyword in problog
-#We add the probabilities here, but they get removed on compiling
-cpcode = """0.8 : breaks <-- throws(mary).
-0.6 : breaks <-- throws(john).
-0.5 : throws(mary) <-- true.
-1 : throws(john) <-- true.
+cpcode = """t(_) : breaks <-- throws(mary).
+t(_) : breaks <-- throws(john).
+t(_) : throws(mary) <-- true.
+t(_) : throws(john) <-- true.
 """.split("\n")
 
 cc = CPCompiler()
@@ -49,7 +48,7 @@ data.append(ProblogExample(3,"throws(john),throws(mary),breaks",weight=0.46))
 cc.weight=False
 
 runmodel = cc.compileCode(cpcode,otherexamples=data)
-runmodel.iterations = 100
+runmodel.iterations = 500
 result = runmodel.run()
 g = GnuplotDrawer()
 g.draw(result)
