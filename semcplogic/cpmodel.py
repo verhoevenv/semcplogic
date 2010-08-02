@@ -1,10 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from itertools import product
+from itertools import product,repeat
 from collections import defaultdict
 import re
 
+def makeHead(var):
+  headterms = ["t(_):%s(%s)" % (var.name,l) for l in var.levels]
+  headterms[-1] = headterms[-1].replace("t(_)","t(1)")
+  return ",".join(headterms)
+  
 class NonLinearCPLogicGenerator:
   def generate(self,model):
     code = []
@@ -13,18 +18,14 @@ class NonLinearCPLogicGenerator:
     for (s,d) in links:
       linksdict[d].append(s)
     for (d,ss) in linksdict.items():
-      head = self.makeHead(d)
+      head = makeHead(d)
       sources = [["%s(%s)" % (s.name,l) for l in s.levels] for s in ss]
       for i in product(*sources):
         tail = ",".join(i)
         code.append("%s <-- %s." % (head,tail))
     for n in model.getExo():
-      code.append("%s <-- true." % self.makeHead(n))
+      code.append("%s <-- true." % makeHead(n))
     return code
-  def makeHead(self,var):
-    headterms = ["t(_):%s(%s)" % (var.name,l) for l in var.levels]
-    headterms[-1] = headterms[-1].replace("t(_)","t(1)")
-    return ",".join(headterms)
 
 class TableResultInterpreter:
   def interprete(self,model,results):
@@ -43,3 +44,34 @@ class TableResultInterpreter:
           d[cond] = pairedresults
       res[nname] = d
     return res
+
+class LinearCPLogicGenerator:
+  def generate(self,model):
+    code = []
+    for n in model.nodes.values():
+      ancs = n.ancs.keys()
+      assert all(a.levels == n.levels for a in ancs),"Levels should be equal for the linear model!"
+      for anc in ancs:
+        for level in anc.levels:
+          headterms = ["t(_):%s_vote_%s(%s)" % (n.name,anc.name,l) for l in n.levels]
+          headterms[-1] = headterms[-1].replace("t(_)","t(1)")
+          head = ",".join(headterms)
+          body = "%s(%s)" % (anc.name,level)
+          code.append("%s <-- %s." % (head,body))
+      
+      sources = [[(a.name,l) for l in a.levels] for a in ancs]
+      if ancs == []:
+        code.append("%s <-- true." % makeHead(n))
+      else:
+        for i in product(*sources):
+          d = defaultdict(int)
+          for (_,level) in i:
+            d[level] += 1
+          #Here we take a weight of all the votes
+          #Another option might be to use majority voting or something
+          headterms = ["%s:%s(%s)" % (float(count)/len(ancs),n.name,level) for (level,count) in d.items()]
+          head = ",".join(headterms)
+          bodyterms = ["%s_vote_%s(%s)" % (n.name,name,level) for (name,level) in i]
+          body = ",".join(bodyterms)
+          code.append("%s <-- %s." % (head,body))
+    return code
