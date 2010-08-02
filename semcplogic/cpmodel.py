@@ -67,11 +67,18 @@ class LinearCPLogicGenerator:
           d = defaultdict(int)
           for (_,level) in i:
             d[level] += 1
-          #Here we take a weight of all the votes
-          #Another option might be to use majority voting or something
-          headterms = ["%s:%s(%s)" % (float(count)/len(ancs),n.name,level) for (level,count) in d.items()]
-          head = ",".join(headterms)
+          head = self.makeVoteHead(d,len(ancs),n.name)
           bodyterms = ["%s_vote_%s(%s)" % (n.name,name,level) for (name,level) in i]
           body = ",".join(bodyterms)
           code.append("%s <-- %s." % (head,body))
     return code
+  def makeVoteHead(self,levelcounts,totallevels,name):
+     headterms = ["%s:%s(%s)" % (float(count)/totallevels,name,level) for (level,count) in levelcounts.items()]
+     return ",".join(headterms)
+
+class MajorityLinearCPLogicGenerator(LinearCPLogicGenerator):
+  def makeVoteHead(self,levelcounts,totallevels,name):
+    major = max(levelcounts.values())
+    #distribute it evenly in case there is a tie
+    levels = [level for (level,count) in levelcounts.items() if count==major]
+    return ",".join(["%s:%s(%s)" % (1/len(levels),name,level) for level in levels])

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from semcplogic.model import ModelBuilder
-from semcplogic.cpmodel import LinearCPLogicGenerator
+from semcplogic.cpmodel import MajorityLinearCPLogicGenerator
 from semcplogic.cpcompiler import CPCompiler
 from semcplogic.problogresult import GnuplotDrawer
 import pprint
@@ -22,13 +22,13 @@ m = b.consume()
 d = m.sample(100)
 d2 = d.discretise(defaultdict(repeat(["laag","hoog"]).next))
 
-lincp = LinearCPLogicGenerator()
+lincp = MajorityLinearCPLogicGenerator()
 cpcode = lincp.generate(m)
 pprint.pprint(cpcode)
 
 cc = CPCompiler()
 runmodel = cc.compileCode(cpcode,d2)
-runmodel.iterations = 1
+runmodel.iterations = 1000
 result = runmodel.run()
 g = GnuplotDrawer()
 g.draw(result)
