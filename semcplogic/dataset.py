@@ -30,6 +30,12 @@ def discretise(vector,levels=["laag","hoog"]):
     discretised.append(levels[level])
   return discretised
 
+def floatify(s):
+  try:
+    return float(s)
+  except ValueError:
+    return s
+
 class Dataset:
   def __init__(self,variables):
     self.data = []
@@ -38,10 +44,10 @@ class Dataset:
     return len(self.data)
   def addDictData(self,data):
     assert(len(data) == len(self.variables))
-    self.data.append([data[x] for x in self.variables])
+    self.addData([data[x] for x in self.variables])
   def addData(self,point):
     assert(len(point) == len(self.variables))
-    self.data.append(list(point))
+    self.data.append([floatify(p) for p in point])
   def getData(self):
     return self.data
   def asDict(self):
