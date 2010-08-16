@@ -36,6 +36,9 @@ def floatify(s):
   except ValueError:
     return s
 
+def cleanup(s):
+  return floatify(s.lower())
+
 class Dataset:
   def __init__(self,variables):
     self.data = []
@@ -47,7 +50,7 @@ class Dataset:
     self.addData([data[x] for x in self.variables])
   def addData(self,point):
     assert(len(point) == len(self.variables))
-    self.data.append([floatify(p) for p in point])
+    self.data.append([cleanup(p) for p in point])
   def getData(self):
     return self.data
   def asDict(self):

@@ -119,7 +119,7 @@ class ModelBuilder:
   def setStddev(self,node,stddev):
     self.ns[node].stddev = stddev
   def setLevels(self,node,levels):
-    self.ns[node].setLevels(levels)
+    self.ns[node].setLevels([l.lower() for l in levels])
   def setLatent(self,node,latent=True):
     self.ns[node].latent = latent
   def removeNode(self,name):
