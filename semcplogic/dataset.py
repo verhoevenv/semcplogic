@@ -63,14 +63,16 @@ class Dataset:
       for j in xrange(i+1,len(self.data)):
         d.addData(map(operator.sub,self.data[j],self.data[i]))
     return d
-  def discretise(self,levels=defaultdict(repeat(["laag","hoog"]).next)):
+  def discretiseFunc(self,f):
     d = Dataset(self.variables)
     t = transpose(self.data)
-    tdisc = [discretise(data,levels[var]) for (var,data) in zip(self.variables,t)]
+    tdisc = [f(var,data) for (var,data) in zip(self.variables,t)]
     dnew = transpose(tdisc)
     for e in dnew:
       d.addData(e)
     return d
+  def discretise(self,levels=defaultdict(repeat(["laag","hoog"]).next)):
+    return self.discretiseFunc(lambda var,data: discretise(data,levels[var]))
   def isDiscretised(self):
     """Tries to find out if the dataset is discretised by comparing the number of levels to
     the number of datapoints."""
