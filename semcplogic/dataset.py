@@ -30,14 +30,16 @@ def discretise(vector,levels=["laag","hoog"]):
     discretised.append(levels[level])
   return discretised
 
-def floatify(s):
+def cleanup(s):
   try:
-    return float(s)
+    s = s.lower()
+  except AttributeError:
+    return s
+  try:
+    s = float(s)
   except ValueError:
     return s
-
-def cleanup(s):
-  return floatify(s.lower())
+  return s
 
 class Dataset:
   def __init__(self,variables):
