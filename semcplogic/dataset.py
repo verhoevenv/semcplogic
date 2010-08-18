@@ -5,6 +5,7 @@ import operator
 import csv
 from collections import defaultdict
 from itertools import repeat
+from random import shuffle
 
 def transpose(matrix):
   m = [[0 for _ in xrange(len(matrix))] for _ in xrange(len(matrix[0]))]
@@ -93,6 +94,21 @@ class Dataset:
         w.writerow(d)
     finally:
       f.close()
+  def split(self,perc):
+    "Splits the dataset in two portions, one with a fraction perc of the data and the other with 1-perc."
+    totalnum = len(self.data)
+    partfirst = int(perc*totalnum)
+    datacopy = list(self.data)
+    shuffle(datacopy)
+    d1 = Dataset(self.variables)
+    datafirst = datacopy[:partfirst]
+    for p in datafirst:
+      d1.addData(p)
+    d2 = Dataset(self.variables)
+    datasecond = datacopy[partfirst:]
+    for p in datasecond:
+      d2.addData(p)
+    return (d1,d2)
 
 def fromCSV(path):
   f = open(path,"r")
