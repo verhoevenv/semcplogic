@@ -37,6 +37,7 @@ class ProblogResult:
     self.links = links
     self.gatherResults()
     self.gatherErrors()
+    self.calcSSE()
   def gatherResults(self):
     files = self.listFiles("factprobs")
     l = []
@@ -49,6 +50,7 @@ class ProblogResult:
       cpd = self.recalcCPValues(d)
       l.append(cpd)
     self.probs = l
+    self.numparams = sum(map(len,l[0].values()))
   def gatherErrors(self):
     files = self.listFiles("predictions")
     l = []
@@ -78,33 +80,38 @@ class ProblogResult:
     return newd
   def latest(self):
     return self.probs[-1]
+  def calcSSE(self):
+    f = []
+    for it in self.errors:
+      sse = sum([e*e for [e] in it.values()])
+      f.append(sse)
+    self.sse = f
 
 class GnuplotDrawer:
   def __init__(self):
     pass
   def draw(self,result):
+    self.writeList(result.probs,"out.png")
+    self.writeList(result.errors,"error.png")
+  def writeList(self,l,imgfile):
     datafile = tempfile.NamedTemporaryFile()
-    self.writeValues(result.probs,datafile.file)
-    self.callGnuplot(result.probs,datafile.name,"out.png")
+    self.writeValues(l,datafile.file)
+    numvars = sum(map(len,l[0].values()))
+    self.callGnuplot(numvars,datafile.name,imgfile)
     datafile.close()
-    
-    datafile = tempfile.NamedTemporaryFile()
-    self.writeValues(result.errors,datafile.file)
-    self.callGnuplot(result.errors,datafile.name,"error.png")
-    datafile.close()    
   def writeValues(self,l,dest):
     for d in l:
       l = [str(f) for k,v in sorted(d.items()) for f in v]
       dest.write("\t".join(l) + "\n")
     dest.flush()
-  def callGnuplot(self,l,datafile,outfile):
+  def callGnuplot(self,numvars,datafile,outfile):
     f = tempfile.NamedTemporaryFile()
     f.file.write("""set term png
     set output "%s"
     set nokey
     """ % outfile)
     ss = []
-    for i in range(1,sum(map(len,l[0].values())) + 1):
+    for i in range(1,numvars + 1):
       ss.append("\"%s\" using %s" % (datafile,i))
     s = "plot " + ", ".join(ss)
     f.file.write(s + "\n")
