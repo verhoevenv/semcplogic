@@ -86,13 +86,20 @@ class ProblogResult:
       sse = sum([e*e for [e] in it.values()])
       f.append(sse)
     self.sse = f
+  def printReport(self):
+    import pprint
+    print "Probabilities:"
+    pprint.pprint(self.latest())
+    print "Errors:"
+    pprint.pprint(self.errors[-1])
+    print "SSE: %s" % self.sse[-1]
 
 class GnuplotDrawer:
   def __init__(self):
     pass
-  def draw(self,result):
-    self.writeList(result.probs,"out.png")
-    self.writeList(result.errors,"error.png")
+  def draw(self,result,prefix=""):
+    self.writeList(result.probs,"%sout.png" % prefix)
+    self.writeList(result.errors,"%serror.png" % prefix)
   def writeList(self,l,imgfile):
     datafile = tempfile.NamedTemporaryFile()
     self.writeValues(l,datafile.file)
